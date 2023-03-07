@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "qspi_flash.h"
+#include "lfs_utils.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +45,33 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+lfs_t lfs;
+lfs_file_t file;
 
+uint8_t read_buf[256] = {0x00, };
+uint8_t prog_buf[256] = {0x00, };
+uint8_t lookahed_buf[256] = {0x00, };
+
+const struct lfs_config cfg = {
+    // block device operations
+    .read  = fs_flash_read,
+    .prog  = fs_flash_prog,
+    .erase = fs_flash_erase,
+    .sync  = fs_flash_sync,
+
+    // block device configuration
+    .read_size = 256,
+    .prog_size = 256,
+    .block_size = 4096,
+    .block_count = 2048,
+    .cache_size = 256,
+    .lookahead_size = 256,
+    .block_cycles = 100,
+
+    .read_buffer = read_buf,
+    .prog_buffer = prog_buf,
+    .lookahead_buffer = lookahed_buf
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,6 +119,34 @@ int main(void)
   /* USER CODE BEGIN 2 */
   initialize_uart_printf(&huart1);
   qspi_flash_initialize(&hqspi);
+  // mount the filesystem
+  int err = lfs_mount(&lfs, &cfg);
+
+  // reformat if we can't mount the filesystem
+  // this should only happen on the first boot
+  if (err) {
+      lfs_format(&lfs, &cfg);
+      lfs_mount(&lfs, &cfg);
+  }
+
+  // read current count
+  uint32_t boot_count = 0;
+  lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
+  lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
+
+  // update boot count
+  boot_count += 1;
+  lfs_file_rewind(&lfs, &file);
+  lfs_file_write(&lfs, &file, &boot_count, sizeof(boot_count));
+
+  // remember the storage is not updated until the file is closed successfully
+  lfs_file_close(&lfs, &file);
+
+  // release any resources we were using
+  lfs_unmount(&lfs);
+
+  // print the boot count
+  printf("boot_count: %ld\r\n", boot_count);
   /* USER CODE END 2 */
 
   /* Infinite loop */

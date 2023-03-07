@@ -68,7 +68,10 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
 Core/Src/system_stm32l4xx.c \
 printf-utils/Src/printf_config.c \
 printf-utils/Src/printf_debug.c \
-Core/Src/qspi_flash.c
+Core/Src/qspi_flash.c \
+littlefs/lfs_util.c \
+littlefs/lfs.c \
+littlefs-utils/lfs_utils.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -131,7 +134,9 @@ C_INCLUDES =  \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include \
--Iprintf-utils/Inc
+-Iprintf-utils/Inc \
+-Ilittlefs \
+-Ilittlefs-utils
 
 
 # compile gcc flags
