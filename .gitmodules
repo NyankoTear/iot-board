@@ -1,0 +1,3 @@
+[submodule "printf-utils"]
+	path = printf-utils
+	url = https://github.com/NyankoTear/printf-utils

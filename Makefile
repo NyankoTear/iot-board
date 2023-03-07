@@ -65,7 +65,9 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
-Core/Src/system_stm32l4xx.c
+Core/Src/system_stm32l4xx.c \
+printf-utils/Src/printf_config.c \
+printf-utils/Src/printf_debug.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -114,7 +116,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32L475xx
+-DSTM32L475xx \
+-DDEBUG_LEVEL=3
 
 
 # AS includes
@@ -126,7 +129,8 @@ C_INCLUDES =  \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-Iprintf-utils/Inc
 
 
 # compile gcc flags
