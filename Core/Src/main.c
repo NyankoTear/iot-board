@@ -91,7 +91,7 @@ int main(void)
   MX_RTC_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  initialize_uart_printf(&huart1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
