@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "cli.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,7 +66,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  p_cli_input cli;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -92,6 +92,12 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   initialize_uart_printf(&huart1);
+  cli = ring_buf_initialize(&huart1);
+  if (!cli) {
+    DEBUG_VV("Failed initialize the CLI.\r\n");
+  }
+  // uint8_t a[1] = {0x00};
+  // HAL_UART_Receive_IT(&huart1, a, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
