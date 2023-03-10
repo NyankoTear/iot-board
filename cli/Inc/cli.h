@@ -16,5 +16,6 @@ typedef cli_input* p_cli_input;
 
 p_cli_input ring_buf_initialize(UART_HandleTypeDef* huart);
 void ring_buf_deinitialize(void);
+int dummy_handler(int argc, char* argv[]);
 
 #endif /* __CLI_H__ */

@@ -1,6 +1,7 @@
 #include "cli.h"
 
 #define CHAR_INPUT_LIMIT 1024
+#define ARGUMENT_VECTOR_LIMIT 32
 
 static char inputs[CHAR_INPUT_LIMIT] = {0x00, };
 static cli_input cli_buf;
@@ -8,6 +9,40 @@ static p_cli_input p_cli_buf = NULL;
 
 uint8_t uart_buf[1] = {0x00};
 UART_HandleTypeDef* _huart = NULL;
+
+typedef struct {
+    int argc;
+    char* argv[ARGUMENT_VECTOR_LIMIT];
+} s_arg;
+
+s_arg cmd_arg = {0, {0x00, }};
+
+typedef struct {
+    char* cmd;
+    int (* handler)(int argc, char* argv[]);
+} s_command;
+
+static s_command cmd_list[] = {
+    {"help", dummy_handler}
+};
+
+int dummy_handler(int argc, char* argv[])
+{
+    for (int i = 0; i < argc; i++) {
+        printf("%s\r\n", argv[i]);
+    }
+
+    return 0;
+}
+
+static void cli_excute(s_arg* p)
+{
+    for (int i = 0; i < sizeof(cmd_list) / sizeof(cmd_list[0]); i++)  {
+        if ((strcmp(p->argv[0], cmd_list[i].cmd) == 0) && (cmd_list[i].handler != NULL)) {
+            cmd_list[i].handler(p->argc, p->argv);
+        } 
+    }   
+}
 
 p_cli_input ring_buf_initialize(UART_HandleTypeDef* huart)
 {
@@ -93,25 +128,44 @@ static char ring_buf_dequeue(p_cli_input q) {
     return data;
 }
 
-static int ring_buf_clear(p_cli_input q) {
-    if (q == NULL) {
-        return 0;
-    }
-
-    p_cli_buf->tail = -1;
-    p_cli_buf->head = 0;
-    p_cli_buf->size = 0;
-
-    return 1;
-}
-
 static int32_t ring_buf_get_size(p_cli_input q) {
     if (q == NULL) {
         return -1;
     }
 
     return q->size;
-} 
+}
+
+static s_arg* ring_buf_parser(p_cli_input q, int32_t len)
+{
+    if (q == NULL) {
+        return NULL;
+    }
+
+    char p_entered_string[1024] = "";
+    char* p_token;
+    char* p_save = p_entered_string;
+
+    s_arg* p_arg = &cmd_arg;
+    p_arg->argc = 0;
+
+    for (int i = 0; i < len; i++) {
+        char data = ring_buf_dequeue(q);
+        if (i != len - 1) {
+            strncat(p_entered_string, &data, 1);
+        } else {
+            char null_terminator = '\0';
+            strncat(p_entered_string, &null_terminator, 1);
+        }
+    }
+
+    while ((p_token = strtok_r(p_save, " ", &p_save))) {
+        p_arg->argv[p_arg->argc] = p_token;
+        p_arg->argc++;
+    }
+
+    return p_arg;
+}
 
 void USART1_IRQHandler(void)
 {
@@ -122,14 +176,10 @@ void USART1_IRQHandler(void)
         ring_buf_queue(p_cli_buf, uart_buf[0]);
         printf("%c", uart_buf[0]);
         if (uart_buf[0] == 0x0D) {
-            printf("\r\necho: ");
-            int32_t len = ring_buf_get_size(p_cli_buf);
-            for (int i = 0; i < len; i++) {
-                char data = ring_buf_dequeue(p_cli_buf);
-                printf("%c", data);
-            }
             printf("\r\n");
-            ring_buf_clear(p_cli_buf);
+            int32_t entered_string_length = ring_buf_get_size(p_cli_buf);
+            s_arg* p_cmd = ring_buf_parser(p_cli_buf, entered_string_length);
+            cli_excute(p_cmd);
         }
     }
     HAL_UART_Receive_IT(_huart, uart_buf, 1);
