@@ -129,24 +129,29 @@ int main(void)
       lfs_mount(&lfs, &cfg);
   }
 
-  // read current count
-  uint32_t boot_count = 0;
-  lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
-  lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
+  lfs_dir_t dir;
+  err = lfs_dir_open(&lfs, &dir, ".");
+  if (err) {
+      DEBUG_VV("Failed to open directoy \".\"\r\n");
+  }
+  
+  struct lfs_info info;
+  while ((err = lfs_dir_read(&lfs, &dir, &info))) {
+      if (err > 0) {
+        DEBUG_VV("Type: %d, Size: %ld, Name: %s\r\n", info.type, info.size, info.name);
+      } else {
+        DEBUG_VV("Failed to read dir %s.\r\n", info.name);
+      }
+  };
 
-  // update boot count
-  boot_count += 1;
-  lfs_file_rewind(&lfs, &file);
-  lfs_file_write(&lfs, &file, &boot_count, sizeof(boot_count));
-
-  // remember the storage is not updated until the file is closed successfully
-  lfs_file_close(&lfs, &file);
+  err = lfs_dir_close(&lfs, &dir);
+  if (err) {
+      DEBUG_VV("Failed to close the directory.\r\n");
+  }
 
   // release any resources we were using
   lfs_unmount(&lfs);
 
-  // print the boot count
-  printf("boot_count: %ld\r\n", boot_count);
   /* USER CODE END 2 */
 
   /* Infinite loop */
