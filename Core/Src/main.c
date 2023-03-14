@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "cli.h"
+#include "lfs_utils.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +46,33 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+lfs_t lfs;
+lfs_file_t file;
 
+uint8_t read_buf[256] = {0x00, };
+uint8_t prog_buf[256] = {0x00, };
+uint8_t lookahed_buf[256] = {0x00, };
+
+const struct lfs_config cfg = {
+    // block device operations
+    .read  = fs_flash_read,
+    .prog  = fs_flash_prog,
+    .erase = fs_flash_erase,
+    .sync  = fs_flash_sync,
+
+    // block device configuration
+    .read_size = 256,
+    .prog_size = 256,
+    .block_size = 4096,
+    .block_count = 2048,
+    .cache_size = 256,
+    .lookahead_size = 256,
+    .block_cycles = 100,
+
+    .read_buffer = read_buf,
+    .prog_buffer = prog_buf,
+    .lookahead_buffer = lookahed_buf
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,12 +119,11 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   initialize_uart_printf(&huart1);
+  qspi_flash_initialize(&hqspi);
   cli = ring_buf_initialize(&huart1);
   if (!cli) {
     DEBUG_VV("Failed initialize the CLI.\r\n");
   }
-  // uint8_t a[1] = {0x00};
-  // HAL_UART_Receive_IT(&huart1, a, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */

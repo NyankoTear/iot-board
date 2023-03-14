@@ -69,6 +69,10 @@ Core/Src/system_stm32l4xx.c \
 printf-utils/Src/printf_config.c \
 printf-utils/Src/printf_debug.c \
 cli/Src/cli.c
+Core/Src/qspi_flash.c \
+littlefs/lfs_util.c \
+littlefs/lfs.c \
+littlefs-utils/lfs_utils.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -118,7 +122,7 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32L475xx \
--DDEBUG_LEVEL=3
+-DDEBUG_LEVEL=2
 
 
 # AS includes
@@ -133,6 +137,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Include \
 -Iprintf-utils/Inc \
 -Icli/Inc
+-Ilittlefs \
+-Ilittlefs-utils
 
 
 # compile gcc flags
@@ -212,12 +218,13 @@ NPROC=$(shell nproc)
 STM32_PROG_PATH = stm32-programmer-cli 
 STM32_PROG_SWD_FREQ_FLAG = 4000
 STM32_PROG_PORT_FLAG = -c port=swd freq=$(STM32_PROG_SWD_FREQ_FLAG)
-STM32_PROG_DOWNLOAD_FLAG = -d "$(CURDIR)/$(BUILD_DIR)/$(TARGET).bin"
+STM32_PROG_ERASE_ALL_FLAG = -e all
+STM32_PROG_DOWNLOAD_FLAG = -d $(CURDIR)/$(BUILD_DIR)/$(TARGET).bin
 STM32_PROG_DOWNLOAD_ADDR_FLAG = 0x08000000
 STM32_PROG_OPTIONAL_FLAG = -v -rst
 
 download: 
-	$(STM32_PROG_PATH) $(STM32_PROG_PORT_FLAG) $(STM32_PROG_DOWNLOAD_FLAG) $(STM32_PROG_DOWNLOAD_ADDR_FLAG) $(STM32_PROG_OPTIONAL_FLAG)
+	$(STM32_PROG_PATH) $(STM32_PROG_PORT_FLAG) $(STM32_PROG_ERASE_ALL_FLAG) $(STM32_PROG_DOWNLOAD_FLAG) $(STM32_PROG_DOWNLOAD_ADDR_FLAG) $(STM32_PROG_OPTIONAL_FLAG)
 
 rebuild: clean
 	make -j$(NPROC) all
