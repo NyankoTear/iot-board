@@ -68,7 +68,7 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
 Core/Src/system_stm32l4xx.c \
 printf-utils/Src/printf_config.c \
 printf-utils/Src/printf_debug.c \
-cli/Src/cli.c
+cli/Src/cli.c \
 Core/Src/qspi_flash.c \
 littlefs/lfs_util.c \
 littlefs/lfs.c \
@@ -136,7 +136,7 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include \
 -Iprintf-utils/Inc \
--Icli/Inc
+-Icli/Inc \
 -Ilittlefs \
 -Ilittlefs-utils
 
