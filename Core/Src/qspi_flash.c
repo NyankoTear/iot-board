@@ -430,6 +430,79 @@ int qspi_flash_erase_sector(uint32_t address)
     return 0;
 }
 
+int qspi_flash_erase_chip(void)
+{
+    if (!_hqspi) {
+        DEBUG_VV("ERROR: Unreferenced qspi peripheral.\r\n");
+        return 1;
+    }
+    
+    uint8_t status_register[1] = {0x00, };
+    int ret;
+
+    // Check the write enable (WEL) is 1
+    do {
+        ret = qspi_flash_write_enable();
+        if (ret) {
+            DEBUG_VV("ERROR: Failed to write enable command.\r\n");
+            return 1;
+        }
+
+        HAL_Delay(1);
+
+        ret = qspi_flash_read_status_register(status_register);
+        if (ret) {
+            DEBUG_VV("ERROR: Failed to read status register\r\n");
+            return 1;
+        }
+    } while (!((status_register[0] & 0x02) == 0x02));
+
+    QSPI_CommandTypeDef qspi_flash_program_page = {
+        .Instruction = 0x60,
+        .AddressMode = QSPI_ADDRESS_NONE,
+        .AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE,
+        .DummyCycles = 0,
+        .InstructionMode = QSPI_INSTRUCTION_1_LINE,
+        .DataMode = QSPI_DATA_NONE,
+        .NbData = 0,
+        .DdrMode = QSPI_DDR_MODE_DISABLE,
+        .SIOOMode = QSPI_SIOO_INST_EVERY_CMD,
+    };
+
+    ret = HAL_QSPI_Command(_hqspi, &qspi_flash_program_page, HAL_MAX_DELAY);
+
+    if (ret != HAL_OK) {
+        DEBUG_VV("ERROR: HAL_QSPI_Command status %d\r\n", ret);
+        return ret;
+    }
+
+    int elapsed_time = 0;
+    // Is write in Progress finished?
+    do {
+        ret = qspi_flash_read_status_register(status_register);
+        if (ret) {
+            DEBUG_VV("ERROR: Failed to read status register\r\n");
+            return 1;
+        }
+        
+        HAL_Delay(1000);
+        DEBUG_VV("[INFO] Erasing the data (%ds elapsed)...\r\n", ++elapsed_time);
+    } while (!((status_register[0] & 0x01) == 0x00));
+
+    ret = qspi_flash_read_security_register(status_register);
+    if (ret != HAL_OK) {
+        DEBUG_VV("ERROR: Failed to read security register.\r\n");
+        return ret;
+    }
+    
+    if (((status_register[0] & 0x40) == 0x40) || ((status_register[0] & 0x20) == 0x20)) {
+        DEBUG_VV("ERROR: Cannot successfully program or erase the chip.\r\n");
+        return 1;
+    }
+
+    return 0;
+}
+
 int qspi_flash_read_page(uint8_t *data, uint32_t data_length, uint32_t address)
 {
     if (!_hqspi) {
