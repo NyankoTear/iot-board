@@ -1,4 +1,6 @@
 #include "cli.h"
+#include "printf_config.h"
+#include "printf_debug.h"
 
 #define CHAR_INPUT_LIMIT 1024
 #define ARGUMENT_VECTOR_LIMIT 32

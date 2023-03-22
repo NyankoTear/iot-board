@@ -1,4 +1,6 @@
 #include "qspi_flash.h"
+#include "printf_config.h"
+#include "printf_debug.h"
 
 static QSPI_HandleTypeDef *_hqspi = NULL;
 

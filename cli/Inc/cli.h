@@ -1,8 +1,8 @@
 #ifndef __CLI_H__
 #define __CLI_H__
 
+#include <string.h>
 #include "usart.h"
-#include "string.h"
 
 typedef struct {
     uint32_t head;
