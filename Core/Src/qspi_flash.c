@@ -396,7 +396,7 @@ int qspi_flash_erase_sector(uint32_t address)
         return ret;
     }
 
-    uint8_t data[3] = {((address >> 16) & 0xFF), ((address >> 8) & 0xFF), ((address >> 8) & 0xFF)};
+    uint8_t data[3] = {((address >> 16) & 0xFF), ((address >> 8) & 0xFF), (address & 0xFF)};
 
     ret = HAL_QSPI_Transmit(&hqspi, data, HAL_MAX_DELAY);
 
