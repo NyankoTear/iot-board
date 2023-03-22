@@ -25,6 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "printf_config.h"
+#include "printf_debug.h"
 #include "cli.h"
 #include "lfs_utils.h"
 /* USER CODE END Includes */

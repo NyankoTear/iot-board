@@ -31,8 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "printf_config.h"
-#include "printf_debug.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
